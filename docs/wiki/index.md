@@ -13,6 +13,7 @@
 | UL-0003 | 온보딩 스크립트(scripts/setup.py) 설계 확정 — keywords.json 태그 자동화 및 profile.json 입력 통합 | 2026-07-08 | 기능, 아키텍쳐 | New |
 | UL-0004 | AI 요약 2차 가공에 Claude 루틴 도입 보류 — Lambda 프록시 유지 및 스키마 안정화 조치 확정 | 2026-07-09 | 아키텍쳐, 기능 | New, Pending |
 | UL-0005 | 새 프로젝트(job-fresh) 착수 전 레거시 잔재 정리 — 프로젝트명·용어 변경 및 원티드/Jina/zighang_weekend 폐기 | 2026-07-09 | 기능, 아키텍쳐, 기술스택 | Modifications, Deprecation, Pending |
+| UL-0006 | 코드 이행 전 설계 공백 해소 — 일일 수집 전환, Git 저장 포맷 확정, Lambda 계약, AI 한줄요약 단일화 | 2026-07-09 | 기능, 아키텍쳐 | New, Modifications, Deprecation |
 
 ## Pending 목록
 | 원 UL | 주제 | 남긴 날짜 |

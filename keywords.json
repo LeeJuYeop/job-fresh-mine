@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "depthTwos": ["서버_백엔드", "DevOps_SRE", "시스템_네트워크", "시스템소프트웨어"],
+  "regions": [],
+  "employeeTypes": [],
+  "careerMin": 0,
+  "careerMax": 0,
+  "educations": []
+}

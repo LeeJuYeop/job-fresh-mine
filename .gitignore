@@ -8,11 +8,12 @@ CLAUDE.md
 
 # 기타
 __pycache__
-*test.py
+test_*.py
 
 # 개인 설정 파일
-profile.json
-keywords.json
+# profile.json
+# keywords.json
 
-# (임시) git workflows 관련
-.github
+# 레거시파일
+.github/workflows/legacy_*.yml
+legacy_*.py

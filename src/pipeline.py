@@ -135,15 +135,31 @@ def _clean_part(text: str | None) -> str:
     return cleaned or "-"
 
 
+def _deadline_label(job: dict) -> str:
+    """마감 표기 문자열을 만든다. '마감일' 타입은 end_date 기준 'YY-MM-DD마감'으로,
+    그 외(상시채용·채용시마감)는 유형명 그대로 반환한다.
+    """
+    dtype = job.get("deadline_type") or ""
+    end_date = job.get("end_date")
+    if dtype == "마감일" and end_date:
+        try:
+            return f"{datetime.datetime.fromisoformat(end_date):%y-%m-%d}마감"
+        except ValueError:
+            pass
+    return dtype
+
+
 def build_filename(job: dict) -> str:
-    """`[회사명][경력][채용유형][지역] {title}.md` 형식의 파일명을 만든다.
+    """`[회사명][경력][채용유형][지역][마감] {title}.md` 형식의 파일명을 만든다.
     복수 지역은 첫 지역만 표기(전체 지역은 frontmatter에 기록).
+    마감 자리는 YY-MM-DD마감(마감일 타입) 또는 유형명(상시채용·채용시마감).
     """
     regions = job.get("regions") or []
     prefix = "".join(
         f"[{_clean_part(p)}]"
         for p in (job.get("company"), job.get("career"),
-                  job.get("employ_type"), regions[0] if regions else "")
+                  job.get("employ_type"), regions[0] if regions else "",
+                  _deadline_label(job))
     )
     title = _clean_part(job.get("title"))
     max_title_len = MAX_FILENAME_LEN - len(prefix) - len(" .md")
@@ -157,8 +173,9 @@ def _yaml_value(value) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
-def build_document(job: dict, content: str, ai: dict | None, collected_at: str) -> str:
+def build_document(job: dict, content: str, ai: dict | None, now: datetime.datetime) -> str:
     """frontmatter + 마크다운 본문으로 저장 문서 전문을 만든다."""
+    collected_at = now.isoformat(timespec="seconds")
     ai = ai or {}
     ai_comment = (ai.get("ai_comment") or "").strip()
     personal_comment = (ai.get("personal_comment") or "").strip()
@@ -175,6 +192,8 @@ def build_document(job: dict, content: str, ai: dict | None, collected_at: str) 
         f"career: {_yaml_value(job.get('career', ''))}",
         f"employ_type: {_yaml_value(job.get('employ_type', ''))}",
         f"keywords: {_yaml_value(job.get('keywords', []))}",
+        f"deadline: {_yaml_value(_deadline_label(job))}",
+        f"end_date: {_yaml_value(job.get('end_date'))}",
         f"collected_at: {_yaml_value(collected_at)}",
     ]
     if ai_comment:
@@ -215,7 +234,7 @@ def process_job(job: dict, content: str) -> pathlib.Path:
     ai = request_ai_analysis(job, content, profile)
 
     now = datetime.datetime.now(KST)
-    document = build_document(job, content, ai, collected_at=now.isoformat(timespec="seconds"))
+    document = build_document(job, content, ai, now)
     path = save_job(job, document, now)
     log.info("[저장] %s", path)
     return path

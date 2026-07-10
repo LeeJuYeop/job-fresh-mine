@@ -74,12 +74,12 @@ def prosemirror_to_markdown(doc: dict) -> str:
 
 def _zighang_career(career_min: int, career_max: int) -> str:
     """직행 careerMin/careerMax 값을 경력 레이블로 변환한다.
-    min=0, max=0 → 신입 / min=0, max>0 → 무관 / min>0 → 경력
+    min=0, max=0 → 신입 / min=0, max>0 → 경력무관 / min>0 → 경력
     """
     if career_min == 0 and career_max == 0:
         return "신입"
     if career_min == 0:
-        return "무관"
+        return "경력무관"
     return "경력"
 
 
@@ -118,12 +118,14 @@ def fetch_jobs(config: dict, since: datetime.datetime, limit: int) -> list[dict]
     API: https://api.zighang.com/api/recruitments/v3
     구간 조회: sortCondition=LATEST + startDate={since, LocalDateTime 형식}
     지원 필터: depthTwos(직무), regions(지역), employeeTypes(채용유형),
-              careerMin/careerMax(경력), educations(학력) — filters.json 최상위 필드.
+              careerMin/careerMax(경력), educations(학력), companyTypes(기업규모),
+              deadlineTypes(마감유형) — filters.json 최상위 필드.
               복수 값은 같은 키를 반복해 전달(예: depthTwos=a&depthTwos=b).
 
     반환값: 공고 메타데이터 dict 목록 (최대 limit건)
       {"id": "zighang-{UUID}", "url", "company", "title", "regions",
-       "career", "employ_type", "keywords"}
+       "career", "employ_type", "keywords", "deadline_type", "end_date"}
+      end_date는 deadline_type이 "마감일"일 때만 값이 있고 그 외 None.
     """
     start_date = since.strftime("%Y-%m-%dT%H:%M:%S")
 
@@ -135,7 +137,8 @@ def fetch_jobs(config: dict, since: datetime.datetime, limit: int) -> list[dict]
         ("startDate", start_date),
     ]
 
-    for key in ("depthTwos", "regions", "employeeTypes", "educations"):
+    for key in ("depthTwos", "regions", "employeeTypes", "educations",
+                "companyTypes", "deadlineTypes"):
         for val in config.get(key, []):
             params.append((key, val))
 
@@ -187,6 +190,9 @@ def fetch_jobs(config: dict, since: datetime.datetime, limit: int) -> list[dict]
                 ),
                 "employ_type": employ_types[0] if employ_types else "",
                 "keywords": [k for k in raw_keywords if isinstance(k, str)],
+                # 마감일 타입만 endDate가 채워지고 상시채용·채용시마감은 null
+                "deadline_type": item.get("deadlineType", ""),
+                "end_date": item.get("endDate"),
             })
 
         log.info("[직행] 공고 수집(%s~) → %d건", start_date, len(jobs))

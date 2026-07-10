@@ -1,6 +1,6 @@
 """
 job-fresh 메인 파이프라인 — GitHub Actions cron으로 매일 실행되는 진입점.
-소스 어댑터(zighangApi)를 호출해 당일 등록 공고와 본문을 받아,
+소스 어댑터(zighangApi)를 호출해 수집 구간(전날 07:00 KST ~ 실행 시점) 내 등록 공고와 본문을 받아,
 (옵션) Lambda AI 프록시로 한줄요약(ai_comment)·개인화 분석(personal_comment)을 요청하고,
 `jobs/{YYYY-MM-DD}/`에 YAML frontmatter + 마크다운 본문 파일로 저장한다.
 향후 플랫폼 추가 시 어댑터 모듈을 병렬로 붙이는 구조.
@@ -32,14 +32,22 @@ KST = zoneinfo.ZoneInfo("Asia/Seoul")
 # 하루 탐색 개수 상한 — 잠정치. 확정 수치는 미결(Pending, UL-0005).
 DAILY_LIMIT = 20
 
-# keywords.json 스키마 버전 — 구조 변경 감지용
-KEYWORDS_SCHEMA_VERSION = 1
+# 수집 구간 시작: 전날 이 시각(KST)부터 실행 시점까지. 크론(매일 KST 07:00)과 맞물려
+# 구간이 이어지므로 실행 간 중복이 발생하지 않는다.
+# 주기·시점 커스터마이징은 추후 온보딩 스크립트에서 지원 예정.
+COLLECT_START_HOUR = 7
+
+# filters.json 스키마 버전 — 구조 변경 감지용
+FILTERS_SCHEMA_VERSION = 1
 
 # 공고 저장 파일의 frontmatter 스키마 버전 — 각 fork가 소비하는 사실상의 API
 JOB_SCHEMA_VERSION = 1
 
+# 저장소 루트 — 설정·프로필·저장 폴더는 모두 루트 기준(src/ 내부가 아님)
+ROOT_DIR = pathlib.Path(__file__).resolve().parents[1]
+
 # 공고 저장 루트 폴더 (하위에 일별 폴더 생성)
-JOBS_DIR = pathlib.Path(__file__).parent / "jobs"
+JOBS_DIR = ROOT_DIR / "jobs"
 
 # 파일명 최대 길이(.md 포함) — Windows 경로 길이 제한 여유분 확보
 MAX_FILENAME_LEN = 150
@@ -51,46 +59,47 @@ AI_PROXY_URL = os.environ.get("AI_PROXY_URL", "")
 # ── 설정·프로필 로드 ──────────────────────────────────────────────────────────
 
 def load_config() -> dict:
-    """keywords.json(평탄 스키마)을 읽어 반환한다. 없거나 파싱할 수 없으면 종료한다."""
+    """filters.json(평탄 스키마)을 읽어 반환한다. 없거나 파싱할 수 없으면 종료한다."""
     try:
-        with open("keywords.json", encoding="utf-8") as f:
+        with open(ROOT_DIR / "filters.json", encoding="utf-8") as f:
             config = json.load(f)
     except FileNotFoundError:
-        log.error("keywords.json 파일을 찾을 수 없습니다 — 수집을 종료합니다.")
+        log.error("filters.json 파일을 찾을 수 없습니다 — 수집을 종료합니다.")
         sys.exit(1)
     except json.JSONDecodeError as e:
-        log.error("keywords.json 파싱 실패 (%s) — 수집을 종료합니다.", e)
+        log.error("filters.json 파싱 실패 (%s) — 수집을 종료합니다.", e)
         sys.exit(1)
 
     version = config.get("schema_version")
-    if version != KEYWORDS_SCHEMA_VERSION:
+    if version != FILTERS_SCHEMA_VERSION:
         log.warning(
-            "keywords.json schema_version 불일치 (기대: %s, 실제: %s) — 계속 진행하나 필터가 적용되지 않을 수 있습니다.",
-            KEYWORDS_SCHEMA_VERSION, version,
+            "filters.json schema_version 불일치 (기대: %s, 실제: %s) — 계속 진행하나 필터가 적용되지 않을 수 있습니다.",
+            FILTERS_SCHEMA_VERSION, version,
         )
     return config
 
-_PROFILE_PATH = pathlib.Path(__file__).parent / "profile.json"
+_RESUME_PATH = ROOT_DIR / "resume.json"
 _user_profile: dict | None = None
 _profile_loaded = False
 
 
 def load_user_profile() -> dict | None:
+    """resume.json(개인화 분석용 프로필)을 읽어 반환한다. 없으면 개인화 비활성(None)."""
     global _user_profile, _profile_loaded
     if _profile_loaded:
         return _user_profile
     _profile_loaded = True
     try:
-        with _PROFILE_PATH.open(encoding="utf-8") as f:
+        with _RESUME_PATH.open(encoding="utf-8") as f:
             profile: dict = json.load(f)
         _user_profile = profile
-        log.info("[profile] 로드 완료: 기술스택 %d개, 프로젝트 %d개",
+        log.info("[resume] 로드 완료: 기술스택 %d개, 프로젝트 %d개",
                  len(profile.get("tech_stack", [])),
                  len(profile.get("projects", [])))
     except FileNotFoundError:
-        log.info("[profile] profile.json 없음 — 개인화 비활성")
+        log.info("[resume] resume.json 없음 — 개인화 비활성")
     except Exception as e:
-        log.warning("[profile] 로드 실패 (%s) — 개인화 비활성", e)
+        log.warning("[resume] 로드 실패 (%s) — 개인화 비활성", e)
     return _user_profile
 
 
@@ -165,6 +174,7 @@ def build_document(job: dict, content: str, ai: dict | None, collected_at: str) 
         f"regions: {_yaml_value(job.get('regions', []))}",
         f"career: {_yaml_value(job.get('career', ''))}",
         f"employ_type: {_yaml_value(job.get('employ_type', ''))}",
+        f"keywords: {_yaml_value(job.get('keywords', []))}",
         f"collected_at: {_yaml_value(collected_at)}",
     ]
     if ai_comment:
@@ -183,13 +193,14 @@ def build_document(job: dict, content: str, ai: dict | None, collected_at: str) 
 
 def save_job(job: dict, document: str, now: datetime.datetime) -> pathlib.Path:
     """`jobs/{YYYY-MM-DD}/`에 문서를 저장하고 경로를 반환한다.
-    파일명이 겹치면(같은 회사·제목의 별개 공고) id 끝 8자를 붙여 구분한다.
+    파일명이 겹칠 때 같은 공고(id 일치, 재실행 등)면 덮어쓰고,
+    별개 공고(같은 회사·제목)면 id 끝 8자를 붙여 구분한다.
     """
     day_dir = JOBS_DIR / now.strftime("%Y-%m-%d")
     day_dir.mkdir(parents=True, exist_ok=True)
 
     path = day_dir / build_filename(job)
-    if path.exists():
+    if path.exists() and f"id: {_yaml_value(job['id'])}" not in path.read_text(encoding="utf-8"):
         path = path.with_name(f"{path.stem} ({job['id'][-8:]}).md")
 
     path.write_text(document, encoding="utf-8", newline="\n")
@@ -216,7 +227,11 @@ def main():
     config = load_config()
     log.info("=== 수집 시작 | 필터(depthTwos): %s ===", config.get("depthTwos", []))
 
-    jobs = zighangApi.fetch_today_jobs(config, limit=DAILY_LIMIT)
+    now = datetime.datetime.now(KST)
+    since = (now - datetime.timedelta(days=1)).replace(
+        hour=COLLECT_START_HOUR, minute=0, second=0, microsecond=0,
+    )
+    jobs = zighangApi.fetch_jobs(config, since=since, limit=DAILY_LIMIT)
 
     saved = 0
     skipped = 0

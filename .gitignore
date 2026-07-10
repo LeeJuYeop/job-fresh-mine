@@ -11,8 +11,8 @@ __pycache__
 test_*.py
 
 # 개인 설정 파일
-# profile.json
-# keywords.json
+# resume.json
+# filters.json
 
 # 레거시파일
 .github/workflows/legacy_*.yml

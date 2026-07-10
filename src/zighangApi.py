@@ -1,22 +1,18 @@
 """
-직행(zighang) API 어댑터 — 공식 API에서 당일 등록된 채용공고 목록과 본문을 가져온다.
-오케스트레이션(설정 로드, AI, 저장)은 pipeline.py 담당이며, 본 모듈은 직행 API
-호출과 응답 정규화만 책임진다. 향후 플랫폼 추가 시 같은 형태의 어댑터를 병렬로 둔다.
+직행(zighang) API 어댑터 — 공식 API에서 지정 시점 이후 등록된 채용공고 목록과 본문을 가져온다.
+오케스트레이션(설정 로드, 수집 구간 결정, AI, 저장)은 pipeline.py 담당이며, 본 모듈은
+직행 API 호출과 응답 정규화만 책임진다. 향후 플랫폼 추가 시 같은 형태의 어댑터를 병렬로 둔다.
 
-당일 등록분만 조회하므로 실행 간 중복이 구조적으로 발생하지 않는다(별도 dedup 없음).
 본문 추출에 실패한 공고는 폴백 없이 건너뛴다(None 반환 — 호출부가 건너뜀).
 """
 
 import datetime
 import logging
 import re
-import zoneinfo
 
 import requests
 
 log = logging.getLogger(__name__)
-
-KST = zoneinfo.ZoneInfo("Asia/Seoul")
 
 # 사이트 요청 시 봇 차단을 줄이기 위한 브라우저 헤더
 BROWSER_HEADERS = {
@@ -114,27 +110,29 @@ def fetch_zighang_content(url: str) -> str | None:
         return None
 
 
-# ── 당일 공고 목록 수집 ────────────────────────────────────────────────────────
+# ── 공고 목록 수집 ─────────────────────────────────────────────────────────────
 
-def fetch_today_jobs(config: dict, limit: int) -> list[dict]:
-    """직행 공개 API에서 당일(KST 00:00 이후) 등록 공고 메타데이터를 최신순으로 수집한다.
+def fetch_jobs(config: dict, since: datetime.datetime, limit: int) -> list[dict]:
+    """직행 공개 API에서 since(KST) 이후 등록 공고 메타데이터를 최신순으로 수집한다.
 
     API: https://api.zighang.com/api/recruitments/v3
-    당일 조회: sortCondition=LATEST + startDate={KST 당일 00시, LocalDateTime 형식}
+    구간 조회: sortCondition=LATEST + startDate={since, LocalDateTime 형식}
     지원 필터: depthTwos(직무), regions(지역), employeeTypes(채용유형),
-              careerMin/careerMax(경력), educations(학력) — keywords.json 최상위 필드.
+              careerMin/careerMax(경력), educations(학력) — filters.json 최상위 필드.
+              복수 값은 같은 키를 반복해 전달(예: depthTwos=a&depthTwos=b).
 
     반환값: 공고 메타데이터 dict 목록 (최대 limit건)
-      {"id": "zighang-{UUID}", "url", "company", "title", "regions", "career", "employ_type"}
+      {"id": "zighang-{UUID}", "url", "company", "title", "regions",
+       "career", "employ_type", "keywords"}
     """
-    today_start = datetime.datetime.now(KST).strftime("%Y-%m-%dT00:00:00")
+    start_date = since.strftime("%Y-%m-%dT%H:%M:%S")
 
     params: list[tuple] = [
         ("page", 0),
         ("size", limit),
         ("sortCondition", "LATEST"),
         ("orderCondition", "DESC"),
-        ("startDate", today_start),
+        ("startDate", start_date),
     ]
 
     for key in ("depthTwos", "regions", "employeeTypes", "educations"):
@@ -176,6 +174,7 @@ def fetch_today_jobs(config: dict, limit: int) -> list[dict]:
                         flat.extend(x for x in r if isinstance(x, str))
                 raw_regions = flat
             employ_types = item.get("employeeTypes") or []
+            raw_keywords = item.get("keywords") or []
             jobs.append({
                 "id": f"zighang-{item_id}",
                 "url": f"https://zighang.com/recruitment/{item_id}",
@@ -187,9 +186,10 @@ def fetch_today_jobs(config: dict, limit: int) -> list[dict]:
                     item.get("careerMax", 0),
                 ),
                 "employ_type": employ_types[0] if employ_types else "",
+                "keywords": [k for k in raw_keywords if isinstance(k, str)],
             })
 
-        log.info("[직행] 당일(%s~) 공고 수집 → %d건", today_start, len(jobs))
+        log.info("[직행] 공고 수집(%s~) → %d건", start_date, len(jobs))
     except Exception as e:
         log.warning("[직행] API 수집 실패: %s", e)
 

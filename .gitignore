@@ -9,6 +9,8 @@ CLAUDE.md
 # 기타
 __pycache__
 test_*.py
+test_*.md
+test_*.json
 
 # 개인 설정 파일
 # resume.json
@@ -17,3 +19,8 @@ test_*.py
 # 레거시파일
 .github/workflows/legacy_*.yml
 legacy_*.py
+legacy_*.md
+legacy_*.json
+
+# 온보딩 생성기 사이트 (WIP — 배포 준비 전까지 커밋 제외)
+web/

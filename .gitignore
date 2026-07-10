@@ -1,0 +1,19 @@
+# 클로드 관련파일
+.claude
+CLAUDE.md
+.claudeignore
+
+# env파일 제외
+.env
+
+# 기타
+__pycache__
+test_*.py
+
+# 개인 설정 파일
+# profile.json
+# keywords.json
+
+# 레거시파일
+.github/workflows/legacy_*.yml
+legacy_*.py

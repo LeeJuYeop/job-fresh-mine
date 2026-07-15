@@ -9,11 +9,15 @@ CLAUDE.md
 # 기타
 __pycache__
 test_*.py
+test_*.md
+test_*.json
 
 # 개인 설정 파일
-# profile.json
-# keywords.json
+# resume.json
+# filters.json
 
 # 레거시파일
 .github/workflows/legacy_*.yml
 legacy_*.py
+legacy_*.md
+legacy_*.json

@@ -1,0 +1,40 @@
+name: deploy web
+
+on:
+  push:
+    branches: [main]
+    paths: ['web/**']
+  workflow_dispatch:      # Actions 탭에서 수동 실행 (최초 배포·재배포용)
+
+permissions:
+  contents: read
+  pages: write     # GitHub Pages 배포
+  id-token: write  # deploy-pages OIDC 검증
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 코드 가져오기
+        uses: actions/checkout@v4
+
+      - name: Pages 설정
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true  # 저장소에 Pages가 꺼져 있으면 자동 활성화
+
+      - name: 정적 파일 업로드
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - name: 배포
+        id: deployment
+        uses: actions/deploy-pages@v4

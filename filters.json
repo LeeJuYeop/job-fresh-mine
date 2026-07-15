@@ -5,6 +5,7 @@
   "employeeTypes": [],
   "careerMin": 0,
   "careerMax": 0,
+  "includeCareerOpen": true,
   "educations": [],
   "companyTypes": [],
   "deadlineTypes": []

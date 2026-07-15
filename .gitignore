@@ -21,6 +21,3 @@ test_*.json
 legacy_*.py
 legacy_*.md
 legacy_*.json
-
-# 온보딩 생성기 사이트 (WIP — 배포 준비 전까지 커밋 제외)
-web/

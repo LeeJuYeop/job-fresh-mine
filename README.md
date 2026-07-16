@@ -25,13 +25,14 @@ GitHub Actions 크론 (매일 KST 07:00)
 ## filters.json 사용법
 
 수집할 공고의 조건을 정의하는 파일입니다. 배열 필드를 **빈 배열로 두면 해당 조건은 전체 허용**입니다.
+유효한 태그 값을 직접 외울 필요 없이 [필터 생성기](https://leejuyeop.github.io/job-fresh/)를 사용하는 것을 권장합니다.
 
 ```json
 {
   "schema_version": 1,
   "depthTwos": ["서버_백엔드", "DevOps_SRE"],
-  "regions": [],
-  "employeeTypes": [],
+  "regions": ["서울"],
+  "employeeTypes": ["정규직"],
   "careerMin": 0,
   "careerMax": 0,
   "includeCareerOpen": true,
@@ -52,8 +53,6 @@ GitHub Actions 크론 (매일 KST 07:00)
 | `companyTypes` | 기업 규모 |
 | `deadlineTypes` | 마감 유형 (예: `상시채용`, `마감일`) |
 
-유효한 태그 값을 직접 외울 필요 없이 [필터 생성기](https://leejuyeop.github.io/job-fresh/)를 사용하는 것을 권장합니다.
-
 ## 저장 형식
 
 공고 1건 = 파일 1개. 파일명은 훑어보기 좋게 핵심 정보를 담습니다.
@@ -64,15 +63,6 @@ jobs/2026-07-16/[회사명][경력][채용유형][지역][마감] 공고 제목.
 
 - 경력 표기: `신입` / `경력무관` / `N년 이하` / `N년 이상` / `N년~M년`
 - 파일 내부는 YAML frontmatter(회사·제목·지역·경력·키워드·마감일·수집 시각 등) + 마크다운 본문입니다. frontmatter에는 `schema_version`과 공고 고유 ID(`zighang-{UUID}`)가 포함됩니다.
-
-## 로컬 실행 (선택)
-
-```bash
-pip install -r requirements.txt
-python src/pipeline.py
-```
-
-Python 3.12 기준. 실행하면 로컬에도 동일하게 `jobs/` 폴더가 생성됩니다(커밋은 하지 않음).
 
 ## 트러블슈팅
 

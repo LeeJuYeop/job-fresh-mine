@@ -17,6 +17,8 @@ concurrency:
 
 jobs:
   deploy:
+    # 필터 생성기 사이트는 본가에서만 배포한다 — fork에서는 실행되지 않음.
+    if: github.repository == 'LeeJuYeop/job-fresh'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

@@ -108,12 +108,18 @@ def fetch_zighang_content(url: str) -> str | None:
         )
         resp.raise_for_status()
         data = resp.json().get("data") or {}
-        # 본문 ProseMirror 문서: 현행 응답은 data.content, 구버전 응답은 data.summary
-        doc = data.get("content") or data.get("summary")
-        if not doc or not doc.get("content"):
+        # data.content가 표지 이미지 한 장뿐이고 실제 본문은 data.summary에 있는 공고가 있어,
+        # content 변환 결과가 비면 summary로 폴백한다.
+        text = ""
+        for doc in (data.get("content"), data.get("summary")):
+            if doc and doc.get("content"):
+                text = prosemirror_to_markdown(doc)
+                if text:
+                    break
+        if not text:
             log.warning("[직행] 상세 API 본문 없음 (%s) — 건너뜀", url)
             return None
-        return prosemirror_to_markdown(doc)
+        return text
     except Exception as e:
         log.warning("[직행] 상세 API 실패 (%s): %s — 건너뜀", url, e)
         return None

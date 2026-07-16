@@ -21,6 +21,7 @@ GitHub Actions 크론 (매일 KST 07:00)
 2. **필터 설정** — 루트의 `filters.json`을 수정합니다. [필터 생성기 웹페이지](https://leejuyeop.github.io/job-fresh/)에서 클릭만으로 JSON을 만들어 붙여넣을 수 있습니다.
 3. **Actions 활성화** — Fork 저장소는 Actions가 기본 비활성입니다. **Actions 탭 → "I understand my workflows, go ahead and enable them"** 클릭.
 4. **셀프테스트(권장)** — Actions 탭 → `job-fresh pipeline` → **Run workflow**로 즉시 1회 실행해 `jobs/` 폴더에 커밋이 생기는지 확인합니다.
+5. **업데이트 받기** — 이 저장소가 개선되면 Fork 메인 페이지의 **Sync fork → Update branch** 버튼으로 반영합니다. 단, 충돌 시 나타나는 **Discard commits는 누르지 마세요** — 내 필터 설정과 수집된 공고가 전부 사라집니다.
 
 ## filters.json 사용법
 

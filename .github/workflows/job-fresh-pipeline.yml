@@ -15,6 +15,9 @@ concurrency:
 
 jobs:
   collect:
+    # 본가(배포·개발용)에서는 크론 수집을 돌리지 않는다 — jobs/ 누적 방지.
+    # fork에서는 정상 동작하며, 본가에서도 수동 실행(셀프테스트)은 허용.
+    if: github.repository != 'LeeJuYeop/job-fresh' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: 코드 가져오기

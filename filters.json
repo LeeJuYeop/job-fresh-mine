@@ -1,21 +1,10 @@
 {
   "schema_version": 1,
-  "depthTwos": [
-    "서버_백엔드",
-    "웹풀스택",
-    "DevOps_SRE",
-    "시스템_네트워크",
-    "소프트웨어엔지니어",
-    "기타IT_개발"
-  ],
+  "depthTwos": [],
   "regions": [],
-  "employeeTypes": [
-    "정규직",
-    "전환형인턴",
-    "체험형인턴"
-  ],
+  "employeeTypes": [],
   "careerMin": 0,
-  "careerMax": 0,
+  "careerMax": 10,
   "includeCareerOpen": true,
   "educations": [],
   "companyTypes": [],

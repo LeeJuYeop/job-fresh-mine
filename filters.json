@@ -1,10 +1,14 @@
 {
   "schema_version": 1,
-  "depthTwos": [],
+  "depthTwos": [
+    "서버_백엔드",
+    "프론트엔드",
+    "웹풀스택"
+  ],
   "regions": [],
   "employeeTypes": [],
   "careerMin": 0,
-  "careerMax": 10,
+  "careerMax": 0,
   "includeCareerOpen": true,
   "educations": [],
   "companyTypes": [],

@@ -32,7 +32,7 @@
   ],
   "careerMin": 0,
   "careerMax": 0,
-  "includeCareerOpen": true,
+  "includeCareerOpen": false,
   "educations": [],
   "companyTypes": [],
   "deadlineTypes": []

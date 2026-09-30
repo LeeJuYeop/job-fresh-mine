@@ -1,16 +1,16 @@
 ---
 schema_version: 1
-id: "zighang-ee8eed92-0856-4299-9789-7c4f203e0dfc"
-url: "https://zighang.com/recruitment/ee8eed92-0856-4299-9789-7c4f203e0dfc"
+id: "zighang-c550506f-2d34-4ebe-861a-1ff6c10f4163"
+url: "https://zighang.com/recruitment/c550506f-2d34-4ebe-861a-1ff6c10f4163"
 company: "웨이브릿지"
 title: "Quant Developer"
 regions: ["서울"]
 career: "6년 이하"
 employ_type: "정규직"
-keywords: ["ML인프라", "트레이딩시스템", "디지털금융"]
-deadline: "26-09-27마감"
-end_date: "2026-09-27T23:59:59"
-collected_at: "2026-09-16T08:48:40+09:00"
+keywords: ["디지털자산", "유연근무", "구조화상품"]
+deadline: "26-10-11마감"
+end_date: "2026-10-11T23:59:59"
+collected_at: "2026-09-30T09:51:15+09:00"
 ai_status: skipped
 ---
 

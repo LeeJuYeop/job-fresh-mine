@@ -1,16 +1,16 @@
 ---
 schema_version: 1
-id: "zighang-f16ffbe3-2296-49db-8f0c-99989ec4a760"
-url: "https://zighang.com/recruitment/f16ffbe3-2296-49db-8f0c-99989ec4a760"
+id: "zighang-6e7a0d1e-18d4-4491-a88a-7df44fd7c83b"
+url: "https://zighang.com/recruitment/6e7a0d1e-18d4-4491-a88a-7df44fd7c83b"
 company: "애브포인트코리아"
-title: "Technical Service Professional"
+title: "Technical Consultant (Cloud)"
 regions: ["서울"]
 career: "10년 이하"
 employ_type: "정규직"
-keywords: ["기술컨설팅", "SaaS", "고객온보딩"]
+keywords: ["기술컨설팅", "SaaS", "보너스"]
 deadline: "상시채용"
 end_date: null
-collected_at: "2026-10-16T08:57:31+09:00"
+collected_at: "2026-10-30T10:25:18+09:00"
 ai_status: skipped
 ---
 
@@ -65,6 +65,13 @@ AvePoint는 기업이 Microsoft, Google, Salesforce 등 다양한 클라우드 �
 •	글로벌 팀 협업 경험
 
 ### 혜택 및 복지
+■ 근무조건
+• 근무지: 서울 강남구 봉은사로 462 (삼성중앙역 7번 출구 인근)
+• 근무일: 주 5일(월~금)
+• 근무시간: 시차출퇴근제 운영 (09:00~10:00 사이 자율 출근)
+• 급여: 경력 및 역량을 고려하여 면접 후 협의
+
+■ Benefits & Perks
 충분한 휴식과 중요한 순간을 함께합니다
 • 생일 유급휴가 1일
 • 경조사 휴가 및 경조금 지원

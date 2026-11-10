@@ -1,16 +1,16 @@
 ---
 schema_version: 1
-id: "zighang-00070814-ca44-4d51-9d32-b34dc38abec3"
-url: "https://zighang.com/recruitment/00070814-ca44-4d51-9d32-b34dc38abec3"
+id: "zighang-09214650-870a-4c13-a783-e0f7b9b9ed9a"
+url: "https://zighang.com/recruitment/09214650-870a-4c13-a783-e0f7b9b9ed9a"
 company: "웨이브릿지"
 title: "Quant Developer"
 regions: ["서울"]
 career: "6년 이하"
 employ_type: "정규직"
-keywords: ["디지털자산", "백테스트", "유연근무"]
-deadline: "26-11-08마감"
-end_date: "2026-11-08T23:59:59"
-collected_at: "2026-10-27T09:59:02+09:00"
+keywords: ["디지털자산", "ML인프라", "백테스트"]
+deadline: "26-11-22마감"
+end_date: "2026-11-22T23:59:59"
+collected_at: "2026-11-10T12:52:48+09:00"
 ai_status: skipped
 ---
 
